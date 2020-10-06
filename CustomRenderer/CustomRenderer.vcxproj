@@ -162,9 +162,10 @@
     <ClInclude Include="render.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="basicFragmentShader.txt" />
-    <Text Include="basicVertexShader.txt" />
-    <Text Include="mvpVertexShader.txt" />
+    <Text Include="res\basicFragment.txt" />
+    <Text Include="res\basicVertex.txt" />
+    <Text Include="res\mvpVertex.txt" />
+    <Text Include="res\plainColorFragment.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -202,26 +202,6 @@ void freeTexture(texture& tex)
     tex = {};
 }
 
-char* loadShaderFromTxt(std::string path)
-{
-    std::string returnValueStr;
-
-    std::ifstream file(path);
-    if (file.is_open())
-    {
-        std::string line;
-        while (std::getline(file, line))
-        {
-            returnValueStr += line + "\n";
-        }
-    }
-    file.close();
-
-    char * returnValue = new char[returnValueStr.size()];
-    returnValueStr.copy(returnValue, returnValueStr.size());
-
-    return returnValue;
-}
 
 shader makeShader(const char* vertSource, const char* fragSource)
 {
@@ -279,6 +259,38 @@ shader makeShader(const char* vertSource, const char* fragSource)
 
     // Return the shader.
     return newShader;
+}
+
+shader loadShader(const char* vertPath, const char* fragPath)
+{
+    std::string vertText;
+    std::string fragText;
+
+    std::ifstream vertFile(vertPath);
+    assert(vertFile.is_open() && "Failed to open vertex shader file...");
+    if (vertFile.is_open())
+    {
+        std::string line;
+        while (std::getline(vertFile, line))
+        {
+            vertText += line + "\n";
+        }
+    }
+    vertFile.close();
+
+    std::ifstream fragFile(fragPath);
+    assert(fragFile.is_open() && "Failed to open fragment shader file...");
+    if (fragFile.is_open())
+    {
+        std::string line;
+        while (std::getline(fragFile, line))
+        {
+            fragText += line + "\n";
+        }
+    }
+    fragFile.close();
+
+    return makeShader(vertText.c_str(), fragText.c_str());
 }
 
 void freeShader(shader& shader)

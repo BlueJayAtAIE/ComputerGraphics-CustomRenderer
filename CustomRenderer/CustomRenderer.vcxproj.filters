@@ -40,13 +40,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="basicVertexShader.txt">
+    <Text Include="res\basicFragment.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="mvpVertexShader.txt">
+    <Text Include="res\basicVertex.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="basicFragmentShader.txt">
+    <Text Include="res\mvpVertex.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="res\plainColorFragment.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

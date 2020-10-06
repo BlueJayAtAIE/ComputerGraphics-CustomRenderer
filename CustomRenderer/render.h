@@ -48,9 +48,9 @@ texture makeTexture(unsigned width, unsigned height, unsigned channels, const un
 void freeTexture(texture &tex);
 
 
-char* loadShaderFromTxt(std::string path);
-
 shader makeShader(const char *vertSource, const char *fragSource);
+
+shader loadShader(const char* vertPath, const char* fragPath);
 
 void freeShader(shader &shader);
 
