@@ -154,10 +154,16 @@
     <ClCompile Include="context.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="render.cpp" />
+    <ClCompile Include="tinyobj.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="context.h" />
     <ClInclude Include="render.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="basicFragmentShader.txt" />
+    <Text Include="basicVertexShader.txt" />
+    <Text Include="mvpVertexShader.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

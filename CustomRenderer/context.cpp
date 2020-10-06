@@ -49,8 +49,11 @@ bool context::init(int width, int height, const char* title)
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, true);
 #endif
 
-
     // Setup some defaults
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
 
     // Return true if successful.
