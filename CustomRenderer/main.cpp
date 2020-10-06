@@ -14,17 +14,17 @@ int main()
 	// Vertices
 	vertex triVerts[] =
 	{
-		{{-0.5f, -0.5f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}},	// Bottom Left
-		{{ 0.5f, -0.5f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}},	// Bottom Right
-		{{ 0.0f,  0.5f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}}	// Top Center
+		{{-0.5f, -0.5f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}, {0,   0}},	// Bottom Left
+		{{ 0.5f, -0.5f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}, {1,   0}},	// Bottom Right
+		{{ 0.0f,  0.5f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.5, 1}}	// Top Center
 	};
 
 	vertex quadVerts[] =
 	{
-		{{-1.0f, -1.0f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}},	// Bottom Left
-		{{ 1.0f, -1.0f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}},	// Bottom Right
-		{{-1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}},	// Top Left
-		{{ 1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 0.0f, 1.0f}}	// Top Right
+		{{-1.0f, -1.0f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },	// Bottom Left
+		{{ 1.0f, -1.0f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}, {1, 0} },	// Bottom Right
+		{{-1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 1} },	// Top Left
+		{{ 1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 0.0f, 1.0f}, {1, 1} }	// Top Right
 	};
 
 	// Indices
@@ -35,6 +35,9 @@ int main()
 	geometry triangle = makeGeometry(triVerts, 3, triIndices, 3);
 	geometry quad = makeGeometry(quadVerts, 6, quadIndices, 6);
 	geometry cube = loadGeometry("res\\cube.obj");
+
+	// Load textures.
+	texture him = loadTexture("res\\He.png");
 
 	// Source for vertex shader.
 	const char* basicVertShader =
@@ -50,8 +53,18 @@ int main()
 
 	// Source for fragment shader.
 	const char* basicFragShader =
+		"#version 430\n"
+		"in vec4 vColor;\n"
+		"in vec2 vUV;\n"
+		"out vec4 outputColor;\n"
+		"layout (location = 3) uniform sampler2D mainTexture;\n"
+		"void main() { outputColor = texture(mainTexture, vUV); }";
+
+	// Source for fragment shader.
+	const char* colorFragShader =
 		"#version 410\n"
 		"in vec4 vColor;\n"
+		"in vec2 vUV;\n"
 		"out vec4 outputColor;\n"
 		"void main() { outputColor = vColor; }";
 
@@ -61,22 +74,26 @@ int main()
 		"// ------- VERTEX PROVIDED ATTRIBUTES -----------\n"
 		"layout (location = 0) in vec4 position;\n"
 		"layout (location = 1) in vec4 color;\n"
+		"layout (location = 2) in vec2 uv;\n"
 		"// ------- UNIFORM ATTRIBUTES -----------\n"
 		"layout (location = 0) uniform mat4 proj;\n"
 		"layout (location = 1) uniform mat4 view;\n"
 		"layout (location = 2) uniform mat4 model;\n"
 		"out vec4 vColor;\n"
+		"out vec2 vUV;\n"
 		"void main()"
 		"{"
 			"gl_Position = proj * view * model * position; "
 			"vColor = color;"
+			"vUV = uv;"
 		"}";
 
 	// TEST
 	//printf(loadShaderFromTxt("basicVertexShader.txt"));
 
 	// Make the shader.
-	shader basicShader = makeShader(basicVertShader, basicFragShader);
+	//shader basicShader = makeShader(basicVertShader, basicFragShader);
+	shader basicColorShader = makeShader(basicVertShader, colorFragShader);
 	shader mvpShader = makeShader(mvpVertShader, basicFragShader);
 
 	// Set up matrices.
@@ -90,6 +107,8 @@ int main()
 
 	setUniform(mvpShader, 2, triModel);
 
+	setUniform(mvpShader, 3, him, 0);
+
 	// GAME LOOP
 	// ----------------------------------------------------------
 	while (!game.shouldClose())
@@ -101,7 +120,7 @@ int main()
 
 		game.clear();
 		// Implement render logic here!
-		draw(basicShader, quad);
+		draw(basicColorShader, quad);
 
 		setUniform(mvpShader, 2, triModel);
 		draw(mvpShader, cube);
@@ -112,8 +131,11 @@ int main()
 	freeGeometry(quad);
 	freeGeometry(cube);
 
-	freeShader(basicShader);
+	//freeShader(basicShader);
+	freeShader(basicColorShader);
 	freeShader(mvpShader);
+
+	freeTexture(him);
 
 	game.term();
 	return 0;

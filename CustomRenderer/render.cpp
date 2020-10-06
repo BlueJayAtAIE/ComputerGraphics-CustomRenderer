@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include "tinyobj/tiny_obj_loader.h"
+#include "stb/stb_image.h"
 
 geometry makeGeometry(vertex* verts, size_t vertCount, unsigned int* indices, size_t indxCount)
 {
@@ -44,6 +45,14 @@ geometry makeGeometry(vertex* verts, size_t vertCount, unsigned int* indices, si
                           GL_FALSE,         // Normalize the data? (T = yes F = no).
                           sizeof(vertex),   // Byte offset between verticies.
                           (void*)offsetof(vertex, col));        // Byte offset within a vertex to get to this data.
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2,                                    // UVs.
+                          2,                                    // How many things?
+                          GL_FLOAT,                             // What types of things are in that thing?
+                          GL_FALSE,                             // Normalize the data? (T = yes F = no).
+                          sizeof(vertex),                       // Byte offset between verticies.
+                          (void*)offsetof(vertex, uv));        // Byte offset within a vertex to get to this data.
 
     // Unbind the butters (VAO then the buffers)
     glBindVertexArray(0);
@@ -97,7 +106,10 @@ geometry loadGeometry(const char* filepath)
             tinyobj::real_t colG = 1.0f;
             tinyobj::real_t colB = 1.0f;
 
-            verticies.push_back({ { posX, posY, posZ, 1.0f }, { colR, colG, colB, 1.0f } });
+            tinyobj::real_t texU = vertexAttributes.texcoords[2 * idx.texcoord_index + 0];
+            tinyobj::real_t texV = vertexAttributes.texcoords[2 * idx.texcoord_index + 1];
+
+            verticies.push_back({ { posX, posY, posZ, 1.0f }, { colR, colG, colB, 1.0f }, {texU, texV} });
             indices.push_back(faceVerticies * i + j);
         }
 
@@ -117,6 +129,77 @@ void freeGeometry(geometry& geo)
     // This geometry...
     geo = { /*empty*/ };
     // Yeet.
+}
+
+texture loadTexture(const char* filepath)
+{
+    assert(filepath != nullptr && "File path was invalid");
+
+    // Create variables to hold onto some data.
+    int imageWidth, imageHeight, imageFormat;
+    unsigned char* rawPixelData = nullptr; // Use nullptr over NULL.
+
+    // Use stb to load the image (and set some settings where necessary).
+    stbi_set_flip_vertically_on_load(true);
+    rawPixelData = stbi_load(filepath, &imageWidth, &imageHeight, &imageFormat, STBI_default);
+    assert(rawPixelData != nullptr && "Image failed to load.");
+
+    // Pass the image data over to makeTexture.
+    texture newTexture = makeTexture(imageWidth, imageHeight, imageFormat, rawPixelData);
+    assert(newTexture.handle != 0 && "Failed to create texture");
+
+    // Free the image data (it's already in the GPU so we don't need it on the CPU side anymore).
+    stbi_image_free(rawPixelData);
+
+    // Return the texture.
+    return newTexture;
+}
+
+texture makeTexture(unsigned width, unsigned height, unsigned channels, const unsigned char* pixels)
+{
+    // Figure out OpenGL texture format to use.
+    assert(channels > 0 && channels < 5); // Only supports 1-4 channels.
+    GLenum oglFormat = GL_RED;
+    switch (channels)
+    {
+    case 1:
+        oglFormat = GL_RED;
+        break;
+    case 2:
+        oglFormat = GL_RG;
+        break;
+    case 3:
+        oglFormat = GL_RGB;
+        break;
+    case 4:
+        oglFormat = GL_RGBA;
+        break;
+    }
+
+    // Generate a texture.
+    texture returnVal = { 0, width, height, channels };
+
+    glGenTextures(1, &returnVal.handle);
+
+    // Bind an buffer data to it.
+    glBindTexture(GL_TEXTURE_2D, returnVal.handle);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, oglFormat, GL_UNSIGNED_BYTE, pixels);
+
+    // Set some filtering settings.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // Filtering when texel density is greater than display (interpolate.)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);  // Filtering when texel density is less than display (extrapolate.)
+
+    // Return the texture.
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return returnVal;
+}
+
+void freeTexture(texture& tex)
+{
+    glDeleteTextures(1, &tex.handle);
+    tex = {};
 }
 
 char* loadShaderFromTxt(std::string path)
@@ -228,4 +311,14 @@ void setUniform(const shader& shad, GLuint location, const glm::mat4& value)
     // HOWEVER we're going for a little more flexability so we're going to specify which shader program to modify.
 
     glProgramUniformMatrix4fv(shad.program, location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void setUniform(const shader& shad, GLuint location, const texture& tex, int textureSlot)
+{
+    // Set this texture up in a slot.
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
+    glBindTexture(GL_TEXTURE_2D, tex.handle);
+
+    // Pass the slot number over to the uniform.
+    glProgramUniform1i(shad.program, location, textureSlot);
 }
