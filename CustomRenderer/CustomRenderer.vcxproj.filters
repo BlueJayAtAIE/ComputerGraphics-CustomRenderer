@@ -52,5 +52,11 @@
     <Text Include="res\plainColorFragment.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="res\litFragment.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="res\litVertex.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -164,6 +164,8 @@
   <ItemGroup>
     <Text Include="res\basicFragment.txt" />
     <Text Include="res\basicVertex.txt" />
+    <Text Include="res\litFragment.txt" />
+    <Text Include="res\litVertex.txt" />
     <Text Include="res\mvpVertex.txt" />
     <Text Include="res\plainColorFragment.txt" />
   </ItemGroup>

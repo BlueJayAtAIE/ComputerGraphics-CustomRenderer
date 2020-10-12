@@ -3,6 +3,7 @@
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec4 color;
 layout (location = 2) in vec2 uv;
+layout (location = 3) in vec4 normal;
 
 // ------- UNIFORM ATTRIBUTES -----------
 layout (location = 0) uniform mat4 proj;
@@ -12,8 +13,8 @@ layout (location = 2) uniform mat4 model;
 layout (location = 4) uniform float time;
 
 // ------- OUTPUT -----------
-out vec4 vColor;
 out vec2 vUV;
+out vec3 vNormal;
 
 void main()
 {
@@ -21,6 +22,7 @@ void main()
 	finalPosition.y += sin(time) * 1.5f;
 
 	gl_Position = proj * view * model * finalPosition;
-	vColor = color;
+
 	vUV = uv;
+	vNormal = (model * normal).xyz;
 }

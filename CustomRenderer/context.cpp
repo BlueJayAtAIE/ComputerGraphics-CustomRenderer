@@ -69,6 +69,16 @@ void context::tick()
     // Update delta time.
 }
 
+float context::time() const
+{
+    return (float)glfwGetTime();
+}
+
+void context::resetTime(float resetValue)
+{
+    glfwSetTime(resetValue);
+}
+
 void context::term()
 {
     // Clean up Window
@@ -83,7 +93,7 @@ void context::clear()
 {
     // Clears the scren and replaces it with the
     // color specified during the init process.
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 bool context::shouldClose() const

@@ -14,17 +14,17 @@ int main()
 	// Vertices
 	vertex triVerts[] =
 	{
-		{{-0.5f, -0.5f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}, {0,   0}},	// Bottom Left
-		{{ 0.5f, -0.5f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}, {1,   0}},	// Bottom Right
-		{{ 0.0f,  0.5f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.5, 1}}	// Top Center
+		{{-0.5f, -0.5f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}, {0,   0}, {0.0f, 0.0f, -1.0f, 0.0f}},	// Bottom Left
+		{{ 0.5f, -0.5f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}, {1,   0}, {0.0f, 0.0f, -1.0f, 0.0f}},	// Bottom Right
+		{{ 0.0f,  0.5f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.5, 1}, {0.0f, 0.0f, -1.0f, 0.0f}}	// Top Center
 	};
 
 	vertex quadVerts[] =
 	{
-		{{-1.0f, -1.0f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },	// Bottom Left
-		{{ 1.0f, -1.0f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}, {1, 0} },	// Bottom Right
-		{{-1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 1} },	// Top Left
-		{{ 1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 0.0f, 1.0f}, {1, 1} }	// Top Right
+		{{-1.0f, -1.0f, 0, 1}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0}, {0.0f, 0.0f, -1.0f, 0.0f} },	// Bottom Left
+		{{ 1.0f, -1.0f, 0, 1}, {0.0f, 1.0f, 0.0f, 1.0f}, {1, 0}, {0.0f, 0.0f, -1.0f, 0.0f} },	// Bottom Right
+		{{-1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 1}, {0.0f, 0.0f, -1.0f, 0.0f} },	// Top Left
+		{{ 1.0f,  1.0f, 0, 1}, {0.0f, 0.0f, 0.0f, 1.0f}, {1, 1}, {0.0f, 0.0f, -1.0f, 0.0f} }	// Top Right
 	};
 
 	// Indices
@@ -42,19 +42,32 @@ int main()
 	// Make the shader.
 	shader basicColorShader = loadShader("res\\basicVertex.txt", "res\\plainColorFragment.txt");
 	shader mvpShader = loadShader("res\\mvpVertex.txt", "res\\basicFragment.txt");
+	shader lightShader = loadShader("res\\litVertex.txt", "res\\litFragment.txt");
+
+	light sun = { {-1.0f, 0.0f, 0.0f}, {1.0f,1.0f,1.0f} };
 
 	// Set up matrices.
 	glm::mat4 camProj = glm::perspective(glm::radians(80.0f), 444.0f / 444.0f, 0.1f, 100.0f);
 	glm::mat4 camView = glm::lookAt(glm::vec3(0, 1, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
-	glm::mat4 triModel = glm::identity<glm::mat4>();
+	glm::mat4 rotatingShape = glm::identity<glm::mat4>();
 
-	setUniform(mvpShader, 0, camProj);
-	setUniform(mvpShader, 1, camView);
+	//setUniform(mvpShader, 0, camProj);
+	//setUniform(mvpShader, 1, camView);
+	//setUniform(mvpShader, 2, rotatingShape);
+	//setUniform(mvpShader, 3, him, 0);
 
-	setUniform(mvpShader, 2, triModel);
+	setUniform(lightShader, 0, camProj);
+	setUniform(lightShader, 1, camView);
 
-	setUniform(mvpShader, 3, him, 0);
+	setUniform(lightShader, 2, rotatingShape);
+
+	setUniform(lightShader, 3, him, 0);
+
+	setUniform(lightShader, 5, { 0.1f, 0.1f, 0.1f });
+	setUniform(lightShader, 6, sun.color);
+	setUniform(lightShader, 7, sun.direction);
+
 
 	// GAME LOOP
 	// ----------------------------------------------------------
@@ -63,14 +76,15 @@ int main()
 		game.tick();
 		// Implement game logic here!
 
-		triModel = glm::rotate(triModel, glm::radians(0.05f), glm::vec3(0, 1, 0));
+		rotatingShape = glm::rotate(rotatingShape, glm::radians(0.05f), glm::vec3(0, 1, 0));
 
 		game.clear();
 		// Implement render logic here!
 		draw(basicColorShader, quad);
 
-		setUniform(mvpShader, 2, triModel);
-		draw(mvpShader, cube);
+		setUniform(lightShader, 2, rotatingShape);
+		setUniform(lightShader, 4, game.time());
+		draw(lightShader, cube);
 	}
 	// ----------------------------------------------------------
 
@@ -78,9 +92,9 @@ int main()
 	freeGeometry(quad);
 	freeGeometry(cube);
 
-	//freeShader(basicShader);
 	freeShader(basicColorShader);
 	freeShader(mvpShader);
+	freeShader(lightShader);
 
 	freeTexture(him);
 

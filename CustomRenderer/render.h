@@ -9,9 +9,10 @@
 // Define vertex structure.
 struct vertex
 {
-	glm::vec4 pos; // Vertex position
-	glm::vec4 col; // Vertex color
-	glm::vec2 uv;
+	glm::vec4 pos;		// Vertex position
+	glm::vec4 col;		// Vertex color
+	glm::vec2 uv;		// texture coordinates
+	glm::vec4 normal;	// vertext normals.
 };
 
 // An object to represent our mesh.
@@ -31,6 +32,12 @@ struct texture
 {
 	GLuint handle;
 	unsigned int width, height, channels;
+};
+
+struct light
+{
+	glm::vec3 direction;	// Should be normalized.
+	glm::vec3 color;
 };
 
 // Functions to make and unmake the above types.
@@ -59,3 +66,5 @@ void draw(const shader &shader, const geometry &geometry);
 
 void setUniform(const shader &shad, GLuint location, const glm::mat4 &value);
 void setUniform(const shader &shad, GLuint location, const texture &tex, int textureSlot);
+void setUniform(const shader &shad, GLuint location, const float fl);
+void setUniform(const shader &shad, GLuint location, const glm::vec3 &value);

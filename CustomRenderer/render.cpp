@@ -31,19 +31,19 @@ geometry makeGeometry(vertex* verts, size_t vertCount, unsigned int* indices, si
 
     // Describe the data contained within the buffers
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0,                // Position.
-                          4,                // How many things?
-                          GL_FLOAT,         // What types of things are in that thing?
-                          GL_FALSE,         // Normalize the data? (T = yes F = no).
-                          sizeof(vertex),   // Byte offset between verticies.
+    glVertexAttribPointer(0,                                    // Position.
+                          4,                                    // How many things?
+                          GL_FLOAT,                             // What types of things are in that thing?
+                          GL_FALSE,                             // Normalize the data? (T = yes F = no).
+                          sizeof(vertex),                       // Byte offset between verticies.
                           (void*)offsetof(vertex, pos));        // Byte offset within a vertex to get to this data.
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1,                // Color.
-                          4,                // How many things?
-                          GL_FLOAT,         // What types of things are in that thing?
-                          GL_FALSE,         // Normalize the data? (T = yes F = no).
-                          sizeof(vertex),   // Byte offset between verticies.
+    glVertexAttribPointer(1,                                    // Color.
+                          4,                                    // How many things?
+                          GL_FLOAT,                             // What types of things are in that thing?
+                          GL_FALSE,                             // Normalize the data? (T = yes F = no).
+                          sizeof(vertex),                       // Byte offset between verticies.
                           (void*)offsetof(vertex, col));        // Byte offset within a vertex to get to this data.
 
     glEnableVertexAttribArray(2);
@@ -52,7 +52,15 @@ geometry makeGeometry(vertex* verts, size_t vertCount, unsigned int* indices, si
                           GL_FLOAT,                             // What types of things are in that thing?
                           GL_FALSE,                             // Normalize the data? (T = yes F = no).
                           sizeof(vertex),                       // Byte offset between verticies.
-                          (void*)offsetof(vertex, uv));        // Byte offset within a vertex to get to this data.
+                          (void*)offsetof(vertex, uv));         // Byte offset within a vertex to get to this data.
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3,                                    // UVs.
+                          4,                                    // How many things?
+                          GL_FLOAT,                             // What types of things are in that thing?
+                          GL_FALSE,                             // Normalize the data? (T = yes F = no).
+                          sizeof(vertex),                       // Byte offset between verticies.
+                          (void*)offsetof(vertex, normal));     // Byte offset within a vertex to get to this data.
 
     // Unbind the butters (VAO then the buffers)
     glBindVertexArray(0);
@@ -109,7 +117,11 @@ geometry loadGeometry(const char* filepath)
             tinyobj::real_t texU = vertexAttributes.texcoords[2 * idx.texcoord_index + 0];
             tinyobj::real_t texV = vertexAttributes.texcoords[2 * idx.texcoord_index + 1];
 
-            verticies.push_back({ { posX, posY, posZ, 1.0f }, { colR, colG, colB, 1.0f }, {texU, texV} });
+            tinyobj::real_t norX = vertexAttributes.normals[3 * idx.normal_index + 0];
+            tinyobj::real_t norY = vertexAttributes.normals[3 * idx.normal_index + 1];
+            tinyobj::real_t norZ = vertexAttributes.normals[3 * idx.normal_index + 2];
+
+            verticies.push_back({ { posX, posY, posZ, 1.0f }, { colR, colG, colB, 1.0f }, {texU, texV}, {norX, norY, norZ, 0.0f} });
             indices.push_back(faceVerticies * i + j);
         }
 
@@ -333,4 +345,14 @@ void setUniform(const shader& shad, GLuint location, const texture& tex, int tex
 
     // Pass the slot number over to the uniform.
     glProgramUniform1i(shad.program, location, textureSlot);
+}
+
+void setUniform(const shader& shad, GLuint location, const float fl)
+{
+    glProgramUniform1f(shad.program, location, fl);
+}
+
+void setUniform(const shader& shad, GLuint location, const glm::vec3& value)
+{
+    glProgramUniform3fv(shad.program, location, 1, glm::value_ptr(value));
 }
